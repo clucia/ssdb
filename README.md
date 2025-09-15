@@ -11,6 +11,8 @@ At some point, when all of the functions can be done through the website, I may 
 # Status
 This is used in one production system but should be considered alpha quality. Issues and contributions are welcome.
 
+Also, this library handles mainly strings, and doesn't handle formulas (except by value).
+
 # Overview
 SSDB treats Google Sheets as a database, providing structured access to spreadsheet data through familiar database-like operations. It supports reading, writing, updating, and querying data with automatic handling of Google Sheets API interactions.
 
