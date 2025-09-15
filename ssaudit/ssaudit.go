@@ -7,14 +7,19 @@
 package ssaudit
 
 import (
+	"time"
+
 	"github.com/clucia/ssdb"
 	"github.com/clucia/ssdb/sslist"
 )
 
 func (sslog *SSAudit) AuditEntry(updater *ssdb.Updater, dat ...any) {
-	vals := [][]any{
-		dat,
+	line := []any{
+		time.Now().Format(time.RFC3339),
 	}
+	line = append(line, dat...)
+	vals := [][]any{line}
 	sslist := (*sslist.SSList)(sslog)
 	sslist.AppendBlank(updater, vals)
+	updater.Sync()
 }

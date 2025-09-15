@@ -8,25 +8,29 @@ package sslog
 
 import (
 	"context"
+	"time"
 
 	"github.com/clucia/ssdb"
 	"github.com/clucia/ssdb/sslist"
 )
 
 func (sslog *SSLog) Log(updater *ssdb.Updater, dat ...any) {
-	vals := [][]any{
-		dat,
-	}
+	line := []any{time.Now().Format(time.RFC3339)}
+	line = append(line, dat...)
+	vals := [][]any{line}
 	sslist := (*sslist.SSList)(sslog)
 	sslist.AppendBlank(updater, vals)
+	updater.Sync()
 }
 
 func (sslog *SSLog) LogErr(ctx context.Context, dat ...any) {
 	sslist := (*sslist.SSList)(sslog)
 	updater := sslist.DB.NewUpdater()
-	vals := [][]any{
-		append([]any{"Error"}, dat...),
-	}
+	line := []any{}
+	line = append(line, time.Now().Format(time.RFC3339))
+	line = append(line, "ERROR")
+	line = append(line, dat...)
+	vals := [][]any{line}
 	sslist.AppendBlank(updater, vals)
 	updater.Sync()
 }
@@ -34,9 +38,11 @@ func (sslog *SSLog) LogErr(ctx context.Context, dat ...any) {
 func (sslog *SSLog) LogWithData(ctx context.Context, dat ...any) {
 	sslist := (*sslist.SSList)(sslog)
 	updater := sslist.DB.NewUpdater()
-	vals := [][]any{
-		append([]any{"Data"}, dat...),
-	}
+	line := []any{}
+	line = append(line, time.Now().Format(time.RFC3339))
+	line = append(line, "DATA")
+	line = append(line, dat...)
+	vals := [][]any{line}
 	sslist.AppendBlank(updater, vals)
 	updater.Sync()
 }
