@@ -125,7 +125,7 @@ The table metaphor is very useful, so I'll demonstrate reading data in that way.
 ```go
 	updater := hState.ssdb.NewUpdater()
 	updater.Update(maintMode.Range(), [][]any{{"TRUE"}})
-    err = updater.Sync()
+    _, err = updater.Sync()
     // Handle error
 ```
 

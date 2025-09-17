@@ -53,23 +53,22 @@ func (upd *Updater) Len() (l int64) {
 	return int64(len(upd.updateQueue))
 }
 
-func (upd *Updater) Sync() (err error) {
+func (upd *Updater) Sync() (n int, err error) {
 	upd.ssdbHandle.Lock()
 	defer upd.ssdbHandle.Unlock()
 
+	if len(upd.updateQueue) == 0 {
+		return 0, nil // Nothing to sync
+	}
 	for _, elem := range upd.updateQueue {
 		if !elem.dbRange.sheet.CompareVals(elem.dbRange, elem.olddata) {
-			err = errors.New("Data has changed since the update began")
+			err = errors.New("data has changed since the update began")
 			return //
 		}
 	}
-	updates := upd.updateQueue
-	if len(updates) == 0 {
-		return nil // Nothing to sync
-	}
 	// Create and execute batch update request
 	batch := &sheets.BatchUpdateSpreadsheetRequest{}
-	for _, update := range updates {
+	for _, update := range upd.updateQueue {
 		extents := update.dbRange.sheet.GetExtents()
 		growRows, growColumns := extents.NeedsGrowth(update.dbRange)
 		if growRows > 0 {
@@ -108,12 +107,12 @@ func (upd *Updater) Sync() (err error) {
 	}
 	_, err = upd.ssdbHandle.SheetsService.Spreadsheets.BatchUpdate(upd.ssdbHandle.SpreadsheetID, batch).Context(upd.ssdbHandle.ctx).Do()
 	if err != nil {
-		return fmt.Errorf("unable to batch update spreadsheet: %w", err)
+		return 0, fmt.Errorf("unable to batch update spreadsheet: %w", err)
 	}
 
 	// Create batch read request for updated ranges
-	ranges := make([]string, 0, len(updates))
-	for _, update := range updates {
+	ranges := make([]string, 0, len(upd.updateQueue))
+	for _, update := range upd.updateQueue {
 		ranges = append(ranges, upd.ssdbHandle.RangeToString(update.dbRange.gridRange))
 	}
 
@@ -124,16 +123,16 @@ func (upd *Updater) Sync() (err error) {
 	// Execute the batch read request
 	resp, err := req.Context(upd.ssdbHandle.ctx).Do()
 	if err != nil {
-		return fmt.Errorf("unable to retrieve data from sheet: %w", err)
+		return len(upd.updateQueue), fmt.Errorf("unable to retrieve data from sheet: %w", err)
 	}
 
 	// Merge the results
 	err = upd.ssdbHandle.Merge(resp)
 	if err != nil {
-		return fmt.Errorf("unable to merge data from sheet: %w", err)
+		return len(upd.updateQueue), fmt.Errorf("unable to merge data from sheet: %w", err)
 	}
 	upd.updateQueue = make([]*updateItem, 0)
-	return nil
+	return len(upd.updateQueue), nil
 }
 
 func BuildRowdataAny(data [][]any) (rowData []*sheets.RowData) {

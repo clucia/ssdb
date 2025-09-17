@@ -35,7 +35,7 @@ func TestUpdaterGrow(t *testing.T) {
 	}
 	updater.Update(dbRange, newvals)
 
-	err := updater.Sync()
+	_, err := updater.Sync()
 	assert.NoError(t, err, "extending range failed")
 }
 

@@ -58,6 +58,6 @@ func TestListAppend(t *testing.T) {
 	}
 	updater := ssdbHandle.NewUpdater()
 	ssListHandle.AppendBlank(updater, _data)
-	err := updater.Sync()
+	_, err := updater.Sync()
 	assert.NoError(t, err)
 }

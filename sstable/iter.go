@@ -109,9 +109,9 @@ func (sstable *SSTable) ListColumn(N int64) (list []string) {
 		case row.N == 0:
 			return
 		case row.Len() <= N:
-			list = append(list, row.GetCellN(N).GetString())
-		default:
 			list = append(list, "Short Row")
+		default:
+			list = append(list, row.GetCellN(N).GetString())
 		}
 	})
 	return //
