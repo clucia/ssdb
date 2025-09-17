@@ -13,7 +13,7 @@ import (
 	"github.com/clucia/ssdb/sslist"
 )
 
-func (sslog *SSAudit) AuditEntry(updater *ssdb.Updater, dat ...any) {
+func (sslog *SSAudit) AuditUpdate(updater *ssdb.Updater, dat ...any) {
 	line := []any{
 		time.Now().Format(time.RFC3339),
 	}
@@ -21,5 +21,9 @@ func (sslog *SSAudit) AuditEntry(updater *ssdb.Updater, dat ...any) {
 	vals := [][]any{line}
 	sslist := (*sslist.SSList)(sslog)
 	sslist.AppendBlank(updater, vals)
+}
+
+func (sslog *SSAudit) AuditEntry(updater *ssdb.Updater, dat ...any) {
+	sslog.AuditUpdate(updater, dat...)
 	updater.Sync()
 }
