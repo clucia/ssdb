@@ -57,8 +57,9 @@ func (upd *Updater) Sync() (n int, err error) {
 	upd.ssdbHandle.Lock()
 	defer upd.ssdbHandle.Unlock()
 
-	if len(upd.updateQueue) == 0 {
-		return 0, nil // Nothing to sync
+	n = len(upd.updateQueue) 
+	if n == 0 {
+		return // Nothing to sync
 	}
 	for _, elem := range upd.updateQueue {
 		if !elem.dbRange.sheet.CompareVals(elem.dbRange, elem.olddata) {
@@ -123,16 +124,18 @@ func (upd *Updater) Sync() (n int, err error) {
 	// Execute the batch read request
 	resp, err := req.Context(upd.ssdbHandle.ctx).Do()
 	if err != nil {
-		return len(upd.updateQueue), fmt.Errorf("unable to retrieve data from sheet: %w", err)
+		err = fmt.Errorf("unable to retrieve data from sheet: %w", err)
+		return //
 	}
 
 	// Merge the results
 	err = upd.ssdbHandle.Merge(resp)
 	if err != nil {
-		return len(upd.updateQueue), fmt.Errorf("unable to merge data from sheet: %w", err)
+		err = fmt.Errorf("unable to merge data from sheet: %w", err)
+		return //
 	}
 	upd.updateQueue = make([]*updateItem, 0)
-	return len(upd.updateQueue), nil
+	return //
 }
 
 func BuildRowdataAny(data [][]any) (rowData []*sheets.RowData) {
