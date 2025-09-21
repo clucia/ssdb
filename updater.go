@@ -57,7 +57,7 @@ func (upd *Updater) Sync() (n int, err error) {
 	upd.ssdbHandle.Lock()
 	defer upd.ssdbHandle.Unlock()
 
-	n = len(upd.updateQueue) 
+	n = len(upd.updateQueue)
 	if n == 0 {
 		return // Nothing to sync
 	}
@@ -273,8 +273,16 @@ func isString(s string) bool {
 }
 
 func isNumeric(s string) bool {
-	if s[0] == '$' {
+	switch {
+	case len(s) == 0:
+		return false
+	case s == "$":
+		return false
+	case s[0] == '$':
 		s = s[1:]
+	}
+	if len(s) == 0 {
+		return false
 	}
 	for _, c := range s {
 		if (c < '0' || c > '9') && c != '.' {
