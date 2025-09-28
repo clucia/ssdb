@@ -7,6 +7,7 @@
 package ssdb
 
 import (
+	"errors"
 	"strings"
 
 	"google.golang.org/api/sheets/v4"
@@ -51,19 +52,22 @@ func (sheet *Sheet) GetRowN(N int64) *Row {
 	}
 }
 
-func (row *Row) GetCellByName(name string) (res *Cell) {
+var ErrDuplicateColumnKey = errors.New("duplicate column error")
+
+func (row *Row) GetCellByName(name string) (res *Cell, err error) {
 	hdrrow := row.Sheet.GetRowN(0)
-	var err bool
 	hdrrow.CellIter(func(cell *Cell) {
 		switch {
+		case err != nil:
+			// do nothing after first error
 		case res != nil && cell.GetString() == name:
-			err = true
+			err = ErrDuplicateColumnKey
 		case cell.GetString() == name:
 			res = row.GetCellN(cell.N)
 		}
 	})
-	if err {
-		return nil
+	if err != nil {
+		return nil, err
 	}
 	return //
 }
@@ -108,7 +112,7 @@ func (row *Row) Len() int64 {
 }
 
 func (cell *Cell) IsBlank() bool {
-	if cell == nil {
+	if cell == nil || cell.Cell == nil {
 		return true
 	}
 	return cell.GetString() == ""

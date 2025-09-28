@@ -22,7 +22,7 @@ func (sstable *SSTable) Iter(f func(_map map[string]any)) {
 		_map = nil
 		switch {
 		case row.N == 0:
-			enableHdrCell = row.GetCellByName("Enable") // No enable header implies everything is enabled
+			enableHdrCell, _ = row.GetCellByName("Enable") // No enable header implies everything is enabled // TODO
 			hdrrow = row
 			return
 		case row.IsBlank():
@@ -60,7 +60,7 @@ func (sstable *SSTable) Get2DMap(keyColumn string) (_map map[string]map[string]a
 		switch {
 		case row.N == 0:
 			hdrrow = row
-			keyFlag = row.GetCellByName(keyColumn)
+			keyFlag, _ = row.GetCellByName(keyColumn) // TODO
 			return
 		case row.IsBlank():
 			return
@@ -70,7 +70,8 @@ func (sstable *SSTable) Get2DMap(keyColumn string) (_map map[string]map[string]a
 			if keyFlag == nil {
 				key = fmt.Sprintf("UnamedRow%d", row.N)
 			} else {
-				key = row.GetCellByName(keyColumn).GetString()
+				keyCell, _ := row.GetCellByName(keyColumn) // TODO)
+				key = keyCell.GetString()
 			}
 			row.CellIter(func(cell *ssdb.Cell) {
 				switch {

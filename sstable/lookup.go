@@ -8,6 +8,7 @@ package sstable
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/clucia/ssdb"
 )
@@ -61,7 +62,7 @@ func (sstbl *SSTable) VSearch(colMatch string, colValue string) (foundrow *ssdb.
 	return //
 }
 
-func (sstbl *SSTable) Lookup(rowMatch, colMatch string) (cell *ssdb.Cell, err error) {
+func (sstbl *SSTable) GetRowByName(rowMatch string) (row *ssdb.Row, err error) {
 	var foundRow *ssdb.Row
 	sstbl.sheet.RowIter(func(row *ssdb.Row) {
 		if err != nil {
@@ -74,27 +75,39 @@ func (sstbl *SSTable) Lookup(rowMatch, colMatch string) (cell *ssdb.Cell, err er
 			foundRow = row
 		}
 	})
-	if foundRow == nil {
-		err = ErrLookupFailed
-		return
+	switch {
+	case err != nil:
+		return nil, err
+	case foundRow == nil:
+		return nil, ErrLookupFailed
+	default:
+		return foundRow, nil
+	}
+}
+
+func (sstbl *SSTable) Lookup(rowMatch, colMatch string) (cell *ssdb.Cell, err error) {
+	var foundRow *ssdb.Row
+	foundRow, err = sstbl.GetRowByName(rowMatch)
+	switch {
+	case err != nil:
+		return nil, err
+	case foundRow == nil:
+		return nil, ErrLookupFailed
+	default:
+		// process below
 	}
 	var foundCell *ssdb.Cell
-	hdrrow := sstbl.sheet.GetRowN(0)
-	hdrrow.CellIter(func(cell *ssdb.Cell) {
-		if cell.GetString() == colMatch {
-			if foundCell != nil {
-				err = ErrDuplicateColumnKey
-				return
-			}
-			foundCell = cell
-		}
-	})
-	if foundCell == nil {
-		err = ErrLookupFailed
-		return //
+	foundCell, err = foundRow.GetCellByName(colMatch)
+	switch {
+	case err != nil:
+		return nil, err
+	case foundRow == nil:
+		return nil, ErrLookupFailed
+	default:
+		// process below
 	}
-	cell = foundRow.GetCellN(foundCell.N)
-	return //
+	fmt.Printf("Lookup: |%24s|%24s|\n", rowMatch, colMatch)
+	return foundCell, nil
 }
 
 func (sstbl *SSTable) GetKeys() (rowKeys, colKeys []string) {
