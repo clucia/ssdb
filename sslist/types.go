@@ -20,24 +20,32 @@ type SSList struct {
 }
 
 var ErrSheetNotFound = errors.New("sheet not found")
+var ErrCantAppend = errors.New("cannot append")
 
 func Open(db *ssdb.SSDB, match string) (sslst *SSList, err error) {
 	sslst = &SSList{
 		DB: db,
 	}
-	var found bool
-	db.SheetIter(func(sheetname string, sheet *ssdb.Sheet) {
-		if found {
-			return
+	sheet := db.SheetLookup(match)
+	if sheet == nil {
+		sslst, err = nil, ErrSheetNotFound
+	} else {
+		sslst = &SSList{
+			DB:        db,
+			sheetName: match,
+			Sheet:     sheet,
 		}
-		if sheetname == match {
-			found = true
-			sslst.Sheet = sheet
-			sslst.sheetName = sheetname
+	}
+	minAppend := int64(-1)
+	sheet.RowIter(func(row *ssdb.Row) {
+		if !row.IsBlank() {
+			minAppend = row.N
 		}
 	})
-	if !found {
-		sslst, err = nil, ErrSheetNotFound
+	if minAppend < 0 {
+		sslst, err = nil, ErrCantAppend
+		return
 	}
+	sslst.minAppendLine = minAppend + 1
 	return //
 }

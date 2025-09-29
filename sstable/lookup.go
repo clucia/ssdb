@@ -106,7 +106,7 @@ func (sstbl *SSTable) Lookup(rowMatch, colMatch string) (cell *ssdb.Cell, err er
 	default:
 		// process below
 	}
-	fmt.Printf("Lookup: |%24s|%24s|\n", rowMatch, colMatch)
+	fmt.Printf("Lookup: |%24s|%24s|%24s\n", rowMatch, colMatch, foundCell.GetString())
 	return foundCell, nil
 }
 
