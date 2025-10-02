@@ -25,7 +25,7 @@ func (sslist *SSList) GetAppendLine() (newRowN int64) {
 	case sslist.minAppendLine < 0:
 		sslist.Sheet.RowIter(func(row *ssdb.Row) {
 			if !row.IsBlank() {
-				newRowN = row.N
+				newRowN = row.N + 1
 			}
 		})
 	default:
