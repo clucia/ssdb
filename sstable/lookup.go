@@ -85,7 +85,7 @@ func (sstbl *SSTable) GetRowByName(rowMatch string) (row *ssdb.Row, err error) {
 	}
 }
 
-func (sstbl *SSTable) Lookup(rowMatch, colMatch string) (cell *ssdb.Cell, err error) {
+func (sstbl *SSTable) QuietLookup(rowMatch, colMatch string) (cell *ssdb.Cell, err error) {
 	var foundRow *ssdb.Row
 	foundRow, err = sstbl.GetRowByName(rowMatch)
 	switch {
@@ -106,8 +106,13 @@ func (sstbl *SSTable) Lookup(rowMatch, colMatch string) (cell *ssdb.Cell, err er
 	default:
 		// process below
 	}
-	fmt.Printf("Lookup: |%24s|%24s|%24s\n", rowMatch, colMatch, foundCell.GetString())
 	return foundCell, nil
+}
+
+func (sstbl *SSTable) Lookup(rowMatch, colMatch string) (cell *ssdb.Cell, err error) {
+	cell, err = sstbl.QuietLookup(rowMatch, colMatch)
+	fmt.Printf("Lookup: |%24s|%24s|%24s\n", rowMatch, colMatch, cell.GetString())
+	return //
 }
 
 func (sstbl *SSTable) GetKeys() (rowKeys, colKeys []string) {

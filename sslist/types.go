@@ -23,29 +23,16 @@ var ErrSheetNotFound = errors.New("sheet not found")
 var ErrCantAppend = errors.New("cannot append")
 
 func Open(db *ssdb.SSDB, match string) (sslst *SSList, err error) {
-	sslst = &SSList{
-		DB: db,
-	}
 	sheet := db.SheetLookup(match)
 	if sheet == nil {
 		sslst, err = nil, ErrSheetNotFound
 	} else {
 		sslst = &SSList{
-			DB:        db,
-			sheetName: match,
-			Sheet:     sheet,
+			DB:            db,
+			sheetName:     match,
+			Sheet:         sheet,
+			minAppendLine: -1,
 		}
 	}
-	minAppend := int64(-1)
-	sheet.RowIter(func(row *ssdb.Row) {
-		if !row.IsBlank() {
-			minAppend = row.N
-		}
-	})
-	if minAppend < 0 {
-		sslst, err = nil, ErrCantAppend
-		return
-	}
-	sslst.minAppendLine = minAppend + 1
 	return //
 }

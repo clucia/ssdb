@@ -21,19 +21,16 @@ func (sslist *SSList) GetAppendRange(rows, columns int64) (dbrange *ssdb.DBRange
 }
 
 func (sslist *SSList) GetAppendLine() (newRowN int64) {
-	sslist.Sheet.RowIter(func(row *ssdb.Row) {
-		if !row.IsBlank() {
-			newRowN = row.N + 1
-		}
-	})
 	switch {
-	case newRowN < sslist.minAppendLine:
+	case sslist.minAppendLine < 0:
+		sslist.Sheet.RowIter(func(row *ssdb.Row) {
+			if !row.IsBlank() {
+				newRowN = row.N
+			}
+		})
+	default:
 		newRowN = sslist.minAppendLine
-		sslist.minAppendLine++
-	case newRowN == sslist.minAppendLine:
-		sslist.minAppendLine++
-	case newRowN > sslist.minAppendLine:
-		sslist.minAppendLine = newRowN + 1
 	}
+	sslist.minAppendLine = newRowN + 1
 	return newRowN
 }
