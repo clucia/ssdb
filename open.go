@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"golang.org/x/oauth2/google"
+	"google.golang.org/api/docs/v1"
 	"google.golang.org/api/drive/v2"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
@@ -33,6 +34,12 @@ func Open(
 		return //
 	}
 	client := configAPI.Client(ctx)
+	// Create a new Doc docService.
+	docsService, err := docs.NewService(ctx, option.WithHTTPClient(client))
+	if err != nil {
+		log.Fatalf("Unable to create Sheets service: %v", err)
+		return //
+	}
 	// Create a new Sheets sheetsService.
 	sheetsService, err := sheets.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
@@ -52,7 +59,8 @@ func Open(
 		ctx:           ctx,
 		dbTime:        time.Now(),
 		SheetsService: sheetsService,
-		driveService:  driveService,
+		DriveService:  driveService,
+		DocsService:   docsService,
 		SpreadsheetID: spreadsheetID,
 	}
 

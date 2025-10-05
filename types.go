@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"google.golang.org/api/docs/v1"
 	"google.golang.org/api/drive/v2"
 	"google.golang.org/api/sheets/v4"
 )
@@ -20,8 +21,9 @@ type SSDB struct {
 	ctx           context.Context
 	dbTime        time.Time // used for caching
 	spreadsheet   *sheets.Spreadsheet
+	DocsService   *docs.Service
 	SheetsService *sheets.Service
-	driveService  *drive.Service
+	DriveService  *drive.Service
 	SpreadsheetID string
 	AppendRows    map[string]int64
 }
