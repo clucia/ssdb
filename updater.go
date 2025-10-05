@@ -25,6 +25,7 @@ type Updater struct {
 	sync.Mutex
 	ssdbHandle  *SSDB
 	updateQueue []*updateItem
+	submitted   bool
 }
 
 func (ssdbHandle *SSDB) NewUpdater() *Updater {

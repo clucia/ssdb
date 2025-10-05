@@ -68,6 +68,9 @@ func (dbrange *DBRange) String() (s string) {
 }
 
 func (cell *Cell) Range() (dbRange *DBRange) {
+	if cell == nil {
+		return nil
+	}
 	gridRange := &sheets.GridRange{
 		SheetId:          cell.Sheet.GetID(),
 		StartColumnIndex: cell.N,
