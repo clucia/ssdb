@@ -41,7 +41,7 @@ func (sheet *Sheet) GetExtents() (res *DBRange) {
 }
 
 func (sheet *Sheet) GetRowN(N int64) *Row {
-	if sheet == nil {
+	if sheet == nil || len(sheet.Sheet.Data) == 0 || len(sheet.Sheet.Data[0].RowData) < int(N) {
 		return nil
 	}
 	return &Row{
@@ -56,6 +56,9 @@ var ErrDuplicateColumnKey = errors.New("duplicate column error")
 
 func (row *Row) GetCellByName(name string) (res *Cell, err error) {
 	hdrrow := row.Sheet.GetRowN(0)
+	if hdrrow == nil {
+		return nil, ErrDuplicateColumnKey
+	}
 	hdrrow.CellIter(func(cell *Cell) {
 		switch {
 		case err != nil:

@@ -115,6 +115,30 @@ func (sstbl *SSTable) Lookup(rowMatch, colMatch string) (cell *ssdb.Cell, err er
 	return //
 }
 
+func (sstbl *SSTable) NLookup(rowMatch string) (cell *ssdb.Cell, err error) {
+	var foundRow *ssdb.Row
+	foundRow, err = sstbl.GetRowByName(rowMatch)
+	switch {
+	case err != nil:
+		return nil, err
+	case foundRow == nil:
+		return nil, ErrLookupFailed
+	case foundRow.Len() < 2:
+		return nil, ErrLookupFailed
+	default:
+		// process below
+	}
+	var foundCell *ssdb.Cell
+	foundCell = foundRow.GetCellN(1)
+	switch {
+	case foundCell == nil:
+		return nil, ErrLookupFailed
+	default:
+		fmt.Printf("Lookup: |%24s|%24s\n", rowMatch, foundCell.GetString())
+		return foundCell, nil
+	}
+}
+
 func (sstbl *SSTable) GetKeys() (rowKeys, colKeys []string) {
 	sstbl.sheet.RowIter(func(row *ssdb.Row) {
 		if row.N == 0 {
